@@ -157,7 +157,7 @@ if __name__ == "__main__":
 # The algorithm generates 2942 solutions to the current puzzle.
 #
 # Timings were measured on my Asus Zenbook (i5 8265U @ 1.6 GHz, Python 3.7.1, battery power)
-# With the naive is_valid_position(), it takes 1 minute 32 seconds to do so.
+# With the naive is_valid(), it takes 1 minute 32 seconds to do so.
 # With pre-generated groups for each position, it takes 29 seconds.
 # With pre-generated dependent positions, it takes 23.5 seconds.
 # No longer copying the board for each iteration: 22 seconds.
