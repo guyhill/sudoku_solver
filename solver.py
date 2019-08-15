@@ -190,9 +190,29 @@ def backtrack2(board, position = 0):
         print("---")
 
 
+def backtrack3(board, position = 0):
+    #print_board(board)
+    #input()
+
+    # Skip squares with given numbers
+    while position < 80 and board[position] != 0:
+        position += 1
+
+    if position <= 80:
+        used_numbers = { board[check_pos] for check_pos in dependent_positions[position] }
+        valid_numbers = {1,2,3,4,5,6,7,8,9}.difference(used_numbers)
+        for i in valid_numbers:
+            board[position] = i
+            backtrack3(board, position + 1)
+        board[position] = 0     # Restore original board
+    else:
+        print_board(board)
+        print("---")
+
+
 if __name__ == "__main__":
     generate_dependent_positions()
-    backtrack2(board)
+    backtrack3(board)
 
 
 # The algorithm generates 2942 solutions to the current puzzle.
@@ -205,3 +225,4 @@ if __name__ == "__main__":
 # Backtrack2: 12.1 seconds
 # Backtrack2 with get_valid_numbers2(): 11.5 seconds
 # Backtrack2 with get_valid_numbers3(): 10.1 seconds
+# Backtrack3: 9.7 seconds
