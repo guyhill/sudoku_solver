@@ -1,4 +1,6 @@
+#include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 int board[] = { 0, 0, 8, 0, 5, 0, 0, 0, 0,
                 0, 0, 0, 3, 0, 0, 0, 0, 0,
@@ -46,6 +48,22 @@ int groups[][9] = { {0, 1, 2, 3, 4, 5, 6, 7, 8},              // Rows
 
 int dependent_positions[81][20] = {0};
 
+#define BUFLEN 9 * 27 + 4
+char output_buffer[BUFLEN];
+
+void fill_buffer() {
+    char *s = output_buffer;
+
+    memset(output_buffer, ' ', BUFLEN);
+    for (int i=0; i<9; i++) {
+        s[26] = '\n';
+        s += 27;
+    }
+    s[0] = s[1] = s[2] = '-';
+    s[3] = '\0';
+}
+
+
 int in(int a[], int len, int n) {
 
     for (int i=0; i<len; i++) {
@@ -75,6 +93,7 @@ void generate_dependent_positions() {
 }
 
 
+#if 0
 void print_board(int board[]) {
 
     for (int i=0; i<9; i++) {
@@ -84,17 +103,25 @@ void print_board(int board[]) {
         printf("\n");
     }
 }
+#endif
+void print_board(int board[]) {
+    char *s = output_buffer;
+    for (int i=0; i<81; i++) {
+        *s = (char) board[i] + '0';
+        s += 3;
+    }
+    puts(output_buffer);
+}
 
 
 unsigned int get_valid_numbers(int board[], int pos) {
 
-    unsigned int mask = 0x1ff;
+    unsigned int mask = 0x3ff;
 
     for (int i = 0; i<20; i++) {
         int check_pos = dependent_positions[pos][i];
         int num = board[check_pos];
-        if (num == 0) continue;
-        mask &= ~(1 << (num - 1));
+        mask &= ~(1 << num);
     }
     return mask;
 }
@@ -114,7 +141,7 @@ void backtrack(int board[], int position) {
     if (position <= 80) {
         unsigned int valid_numbers = get_valid_numbers(board, position);
         for (int num = 1; num <= 9; num++) {
-            unsigned int mask = 1 << (num - 1);
+            unsigned int mask = 1 << num;
             if (valid_numbers & mask) {
                 board[position] = num;
                 backtrack(board, position + 1);
@@ -123,14 +150,21 @@ void backtrack(int board[], int position) {
         board[position] = 0;
     } else {
         print_board(board);
-        puts("---");
     }
 }
 
 
 int main(int argc, char **argv) {
     generate_dependent_positions();
-    for (int i=0; i<100; i++) {
+    fill_buffer();
+
+    int n_iter;
+
+    if (argc == 1) n_iter = 1;
+    else n_iter = atoi(argv[1]);
+    fprintf(stderr, "%i iterations\n", n_iter);
+
+    for (int i=0; i<n_iter; i++) {
         backtrack(board, 0);
     }
 
@@ -141,3 +175,5 @@ int main(int argc, char **argv) {
 // On the same machine, it finishes in 0.14 seconds, or about 70x faster.
 // This speedup is in line with speedup gained when porting other Python
 // projects to C/C++.
+// With non-branching code in get_valid_numbers(), 0.125 seconds
+// With optimized print_board(), 0.103 seconds
