@@ -134,7 +134,7 @@ void backtrack(int board[], int position) {
     getchar();
 #endif
 
-    while(board[position] != 0 && position < 80) {
+    while(board[position] != 0 && position <= 80) {
         position += 1;
     }
 
