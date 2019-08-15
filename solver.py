@@ -149,9 +149,50 @@ def backtrack(board, position = 0):
         print("---")
 
 
+# Different version of algorithm: calculate for each position, the
+# allowed numbers, instead of checking every number separately.
+# This prevents looping through the dependent_positions multiple times.
+def get_valid_numbers(board, current_pos):
+    used_numbers = set()
+    for check_pos in dependent_positions[current_pos]:
+        used_numbers.add(board[check_pos])
+    return {1,2,3,4,5,6,7,8,9}.difference(used_numbers)
+
+
+def get_valid_numbers2(board, current_pos):
+    valid_numbers = {1,2,3,4,5,6,7,8,9}
+    for check_pos in dependent_positions[current_pos]:
+        valid_numbers.discard(board[check_pos])
+    return valid_numbers
+
+
+def get_valid_numbers3(board, current_pos):
+    used_numbers = { board[check_pos] for check_pos in dependent_positions[current_pos] }
+    return {1,2,3,4,5,6,7,8,9}.difference(used_numbers)
+
+
+def backtrack2(board, position = 0):
+    #print_board(board)
+    #input()
+
+    # Skip squares with given numbers
+    while position < 80 and board[position] != 0:
+        position += 1
+
+    if position <= 80:
+        valid_numbers = get_valid_numbers3(board, position)
+        for i in valid_numbers:
+            board[position] = i
+            backtrack2(board, position + 1)
+        board[position] = 0     # Restore original board
+    else:
+        print_board(board)
+        print("---")
+
+
 if __name__ == "__main__":
     generate_dependent_positions()
-    backtrack(board)
+    backtrack2(board)
 
 
 # The algorithm generates 2942 solutions to the current puzzle.
@@ -161,3 +202,6 @@ if __name__ == "__main__":
 # With pre-generated groups for each position, it takes 29 seconds.
 # With pre-generated dependent positions, it takes 23.5 seconds.
 # No longer copying the board for each iteration: 22 seconds.
+# Backtrack2: 12.1 seconds
+# Backtrack2 with get_valid_numbers2(): 11.5 seconds
+# Backtrack2 with get_valid_numbers3(): 10.1 seconds
