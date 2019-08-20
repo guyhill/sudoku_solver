@@ -14,6 +14,7 @@ int board[] = { 0, 0, 8, 0, 5, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 3, 0, 0, 0,
                 0, 0, 0, 0, 4, 0, 6, 0 ,0 };
 
+
 // The groups of squares on the board that must contain
 // the set 1-9, with each number occurring exactly once
 int groups[][9] = { {0, 1, 2, 3, 4, 5, 6, 7, 8},              // Rows
@@ -93,17 +94,6 @@ void generate_dependent_positions() {
 }
 
 
-#if 0
-void print_board(int board[]) {
-
-    for (int i=0; i<9; i++) {
-        for (int j=0; j<9; j++) {
-            printf("%i  ", board[9 * i + j]);
-        }
-        printf("\n");
-    }
-}
-#endif
 void print_board(int board[]) {
     char *s = output_buffer;
     for (int i=0; i<81; i++) {

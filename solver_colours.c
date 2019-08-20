@@ -2,22 +2,22 @@
 #include <stdio.h>
 #include <string.h>
 
-int board[] = { 0, 0, 8, 0, 5, 0, 0, 0, 0,
-                0, 0, 0, 3, 0, 0, 0, 0, 0,
-                0, 0, 2, 0, 0, 0, 7, 0, 5,
+int board[] = { 0, 1, 0, 0, 0, 0, 0, 0, 7,
+                9, 2, 0, 7, 0, 4, 0, 0, 0,
+                0, 0, 7, 0, 0, 0, 3, 0, 0,
           
-                0, 2, 0, 6, 0, 9, 0, 3, 0,
-                8, 0, 0, 0, 0, 0, 0, 0, 4,
-                0, 5, 0, 4, 0, 1, 0, 7, 0,
+                0, 4, 0, 0, 0, 3, 0, 9, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 9, 0, 8, 0, 0, 0, 1, 0,
           
-                2, 0, 1, 0, 0, 0, 8, 0, 0,
-                0, 0, 0, 0, 0, 3, 0, 0, 0,
-                0, 0, 0, 0, 4, 0, 6, 0 ,0 };
+                0, 0, 9, 0, 0, 0, 5, 0, 0,
+                0, 0, 0, 6, 0, 9, 0, 8, 3,
+                6, 0, 0, 0, 0, 0, 0, 4 ,0 };
 
 
 // The groups of squares on the board that must contain
 // the set 1-9, with each number occurring exactly once
-int groups[27][9] = { {0, 1, 2, 3, 4, 5, 6, 7, 8},              // Rows
+int groups[][9] = { {0, 1, 2, 3, 4, 5, 6, 7, 8},              // Rows
                     {9, 10, 11, 12, 13, 14, 15, 16, 17},
                     {18, 19, 20, 21, 22, 23, 24, 25, 26},
                     {27, 28, 29, 30, 31, 32, 33, 34, 35},
@@ -45,13 +45,19 @@ int groups[27][9] = { {0, 1, 2, 3, 4, 5, 6, 7, 8},              // Rows
                     {33, 34, 35, 42, 43, 44, 51, 52, 53},
                     {54, 55, 56, 63, 64, 65, 72, 73, 74},
                     {57, 58, 59, 66, 67, 68, 75, 76, 77},
-                    {60, 61, 62, 69, 70, 71, 78, 79, 80}};
+                    {60, 61, 62, 69, 70, 71, 78, 79, 80},
+                    
+                    { 2,  3,  4,  5,  6, 13, 21, 23, 31},     // Colours
+                    {18, 27, 29, 36, 37, 39, 45, 47, 54},
+                    {26, 33, 35, 41, 43, 44, 51, 53, 62},
+                    {49, 57, 59, 67, 74, 75, 76, 77, 78}};
 
 
 #define BUFLEN 9 * 27 + 4
 char output_buffer[BUFLEN];
-int groups_per_pos[81][3];
-unsigned int masks[27];
+int groups_per_pos[81][4];
+int ngroups_per_pos[81];
+unsigned int masks[31];
 
 
 void fill_buffer() {
@@ -91,17 +97,18 @@ int in(int a[], int len, int n) {
 void init_groups_per_pos(int groups[][9]) {
     for (int pos=0; pos<81; pos++) {
         int k = 0;
-        for (int i=0; i<27; i++) {
+        for (int i=0; i<31; i++) {
             if (in(groups[i], 9, pos)) {
                 groups_per_pos[pos][k++] = i;
             }
         }
+        ngroups_per_pos[pos] = k;
     }
 }
 
 
 void init_masks() {
-    for (int i=0; i<27; i++) {
+    for (int i=0; i<31; i++) {
         masks[i] = 0x3ff;
     }
     for (int pos=0; pos<81; pos++) {
@@ -126,23 +133,44 @@ void backtrack(int board[], int position) {
 
     if (position <= 80) {
         unsigned int valid_numbers;
-        int group1, group2, group3;
+        int group1, group2, group3, group4;
 
         group1 = groups_per_pos[position][0];
         group2 = groups_per_pos[position][1];
         group3 = groups_per_pos[position][2];
-        valid_numbers = masks[group1] & masks[group2] & masks[group3];
-        for (int num = 1; num <= 9; num++) {
-            unsigned int mask = 1 << num;
-            if (valid_numbers & mask) {
-                masks[group1] &= ~mask;
-                masks[group2] &= ~mask;
-                masks[group3] &= ~mask;
-                board[position] = num;
-                backtrack(board, position + 1);
-                masks[group1] |= mask;
-                masks[group2] |= mask;
-                masks[group3] |= mask;
+        group4 = groups_per_pos[position][3];
+        
+        if (ngroups_per_pos[position] == 3) {
+            valid_numbers = masks[group1] & masks[group2] & masks[group3];
+            for (int num = 1; num <= 9; num++) {
+                unsigned int mask = 1 << num;
+                if (valid_numbers & mask) {
+                    masks[group1] &= ~mask;
+                    masks[group2] &= ~mask;
+                    masks[group3] &= ~mask;
+                    board[position] = num;
+                    backtrack(board, position + 1);
+                    masks[group1] |= mask;
+                    masks[group2] |= mask;
+                    masks[group3] |= mask;
+                }
+            }
+        } else {
+            valid_numbers = masks[group1] & masks[group2] & masks[group3] & masks[group4];
+            for (int num = 1; num <= 9; num++) {
+                unsigned int mask = 1 << num;
+                if (valid_numbers & mask) {
+                    masks[group1] &= ~mask;
+                    masks[group2] &= ~mask;
+                    masks[group3] &= ~mask;
+                    masks[group4] &= ~mask;
+                    board[position] = num;
+                    backtrack(board, position + 1);
+                    masks[group1] |= mask;
+                    masks[group2] |= mask;
+                    masks[group3] |= mask;
+                    masks[group4] |= mask;
+                }
             }
         }
         board[position] = 0;
@@ -170,5 +198,3 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-// Produces the same output as solver2.c, but faster:
-// On the same machine, it finishes in 39 milliseconds
