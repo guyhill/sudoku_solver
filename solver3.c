@@ -51,8 +51,7 @@ int groups[27][9] = { {0, 1, 2, 3, 4, 5, 6, 7, 8},              // Rows
 #define BUFLEN 9 * 27 + 4
 char output_buffer[BUFLEN];
 int groups_per_pos[81][3];
-unsigned int masks[27];
-
+int masks[27];
 
 void fill_buffer() {
     char *s = output_buffer;
@@ -120,12 +119,12 @@ void backtrack(int board[], int position) {
     getchar();
 #endif
 
-    while(board[position] != 0 && position <= 80) {
+    while(position <= 80 && board[position] != 0) {
         position += 1;
     }
 
     if (position <= 80) {
-        unsigned int valid_numbers;
+        int valid_numbers;
         int group1, group2, group3;
 
         group1 = groups_per_pos[position][0];
@@ -154,7 +153,6 @@ void backtrack(int board[], int position) {
 
 int main(int argc, char **argv) {
     init_groups_per_pos(groups);
-    init_masks();
     fill_buffer();
 
     int n_iter;
@@ -164,6 +162,7 @@ int main(int argc, char **argv) {
     fprintf(stderr, "%i iterations\n", n_iter);
 
     for (int i=0; i<n_iter; i++) {
+        init_masks();
         backtrack(board, 0);
     }
 
